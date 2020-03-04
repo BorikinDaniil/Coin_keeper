@@ -1,21 +1,13 @@
 <template>
   <div class="body">
-  <div>
-    <TheHeader />
-    <nuxt />
-    <TheFooter />
-  </div>
+    <div>
+      <TheHeader />
+      <TheDate />
+      <nuxt />
+      <TheFooter />
+    </div>
   </div>
 </template>
-
-<script>
-  import TheHeader from "../components/TheHeader";
-  import TheFooter from "../components/TheFooter";
-  export default {
-    components: { TheFooter, TheHeader,}
-  }
-
-</script>
 
 <style scoped lang="css">
   .body {
@@ -24,4 +16,13 @@
     margin: 0;
     background-attachment: fixed;
   }
+
 </style>
+<script>
+  import TheHeader from "../components/TheHeader";
+  import TheFooter from "../components/TheFooter";
+  import TheDate from "../components/TheDate";
+  export default {
+    components: {TheDate, TheFooter, TheHeader,}
+  }
+</script>

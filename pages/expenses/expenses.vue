@@ -6,22 +6,48 @@
       <div class="sumTodayMinus" v-if="expensesBeforeToday() <= 0">
         <h4 >Доступная сумма на сегодня : {{  expensesBeforeToday() }}UAH</h4>
       </div>
-    <form class="decor" @submit.prevent="onSubmitExpense">
+    <validation-observer ref="signUnpForm" v-slot="{ handleSubmit }" class="container h-100vh" tag="div">
+    <form class="decor" @submit.prevent="handleSubmit(onSubmitExpense)">
       <div class="form-left-decoration"></div>
       <div class="form-right-decoration"></div>
       <div class="circle"></div>
       <div class="form-inner">
-        <nuxt-link :to="{ name:'login' }" class="navbar-brand" exact exact-active-class="active">
+        <nuxt-link :to="{ name:'expenses' }" class="navbar-brand" exact exact-active-class="active">
           Добавить расход
         </nuxt-link>
-        <nuxt-link :to="{ name:'about' }" class="navbar-brand" exact exact-active-class="active">
+        <nuxt-link :to="{ name:'incomes' }" class="navbar-brand" exact exact-active-class="active">
           Добавить доход
         </nuxt-link>
-        <input v-model="expense.name" type="text" placeholder="Категория расхода">
-        <input v-model="expense.sum" type="number" placeholder="Сумма">
+        <validation-provider v-slot="{ errors, classes }" name="Категория расхода" rules="required" tag="div" class="form-group">
+          <input
+            id="Категория расхода"
+            v-model="expense.name"
+            :class="classes"
+            name="Категория расхода"
+            type="text"
+            class="form-control"
+            placeholder="Категория расхода">
+          <div class="invalid-feedback">
+            <strong>{{ errors[0] }}</strong>
+          </div>
+        </validation-provider>
+        <validation-provider v-slot="{ errors, classes }" name="Сумма" rules="required" tag="div" class="form-group">
+          <input
+            id="Сумма"
+            v-model="expense.sum"
+            :class="classes"
+            name="Сумма"
+            type="number"
+            class="form-control"
+            placeholder="Сумма">
+          <div class="invalid-feedback">
+            <strong>{{ errors[0] }}</strong>
+          </div>
+        </validation-provider>
         <input type="submit" value="Сохранить">
       </div>
     </form>
+    </validation-observer>
     <h4 v-if="getCurrMonthAndDayExpenses().length > 0">
       Список расходов зa день:
     </h4>
@@ -33,7 +59,7 @@
         </button>
       </li>
     </ol>
-    <h3 v-if="getTotalToday() !== 0">Cумма расходов за день - {{ getTotalToday() }} </h3>
+    <h3 v-if="getTotalToday() !== 0">Cумма расходов за день - {{ getTotalToday() }} UAH </h3>
   </div>
     </template>
 
@@ -42,7 +68,7 @@
       import moment from "moment";
       import {mapGetters} from "vuex";
       export default {
-        name: 'login',
+        name: 'expenses',
         data: () => ({
           expense: {
             name: '',
@@ -52,11 +78,13 @@
         }),
         computed: mapGetters({
           incomes: 'incomes/getIncomes',
-          date: 'date/getDate'
+          date: 'date/getDate',
+          deffers: 'deffer/getDeffers'
         }),
         async fetch({store}) {
           await store.dispatch('incomes/loadIncomes')
-          //await store.dispatch('date/loadDate')
+          await store.dispatch('deffer/loadDeffers')
+
         },
         async asyncData({$axios}) {
           let expenses = []
@@ -69,7 +97,7 @@
         },
         methods: {
           async onDelete(expense) {
-            const message = `Delete ${expense.name}?`
+            const message = `Удалить запись ${expense.name}?`
             if (window.confirm(message)) {
               try {
                 await this.$axios.$delete(`/expenses/${expense.id}`)
@@ -81,12 +109,14 @@
             }
           },
           async onSubmitExpense() {
-            try {
-              this.expense.date = moment(this.date).format("DD.MM.YYYY");
-              const newExpense = await this.$axios.$post('/expenses', this.expense)
-              this.expenses.push(newExpense)
-            } catch (e) {
-              console.log(e)
+            if (await this.$refs.signUnpForm.validate()) {
+              try {
+                this.expense.date = moment(this.date).format("DD.MM.YYYY");
+                const newExpense = await this.$axios.$post('/expenses', this.expense)
+                this.expenses.push(newExpense)
+              } catch (e) {
+                console.log(e)
+              }
             }
           },
           getCurrMonthExpenses() {
@@ -112,10 +142,14 @@
             this.getCurrMonthExpenses().forEach(i => totalSum += +i.sum)
             return totalSum
           },
-
           getDailyMoney() {
-            let totalSum = 0
-            this.getCurrMonthIncomes().forEach(i => totalSum += +i.sum)
+            let totalSum = 0;
+            let totalDeffer = 0;
+            this.getCurrMonthIncomes().forEach(i => totalSum += +i.sum);
+            let curentDeffer =  this.deffers.filter(d =>
+              moment(d.date, "DD.MM.YYYY").isSame(moment(this.date, "DD.MM.YYYY"), 'month'));
+            curentDeffer.forEach(i => totalDeffer += +i.sum);
+            totalSum -= totalDeffer;
             return Math.round(totalSum / moment(this.date).daysInMonth())
           },
         expensesBeforeToday() {
@@ -170,10 +204,10 @@
       .sumToday {
         padding: 5px;
         margin-bottom: 20px;
-        background: green;
+        background: #ECE9E0;
         border-radius: 10px;
         text-align: center;
-        color: white;
+        color: black;
       }
       .sumTodayMinus {
         padding: 5px;
