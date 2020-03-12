@@ -223,10 +223,9 @@
     }
   }
 
+  </script>
 
-</script>
-
-<style scoped lang="css">
+  <style scoped lang="css">
 
   .all {
     width: auto;

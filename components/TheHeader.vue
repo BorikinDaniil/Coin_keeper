@@ -27,8 +27,7 @@
               </nuxt-link>
             </li>
           </template>
-
-          </ul>
+        </ul>
           <ul  class="navbar-nav ml-auto">
             <template v-if="!$auth.loggedIn">
               <li> <nuxt-link :to="{ name:'register' }" class="nav-item nav-link" >
@@ -46,10 +45,8 @@
               </a>
               </li>
             </template>
-
           </ul>
         </div>
-
     </nav>
   </header>
 </template>

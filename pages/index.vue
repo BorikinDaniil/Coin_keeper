@@ -200,6 +200,7 @@
     }
   }
   </script>
+
   <style scoped lang="css">
     table {
       position: relative;
@@ -272,6 +273,4 @@
       opacity: 1;
       top: auto;
     }
-
-
-</style>
+  </style>
